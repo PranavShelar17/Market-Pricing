@@ -393,13 +393,20 @@ def test_multiple_legitimate_records_same_date(test_db: Session):
 def test_api_observations_filtering_and_pagination(client: TestClient, test_db: Session):
     """Test filtering by commodity, district, and date ranges via FastAPI endpoint."""
     service = MarketIngestionService()
+    from datetime import timedelta
+    today = date.today()
+    d_recent = today.isoformat()
+    d_older = (today - timedelta(days=5)).isoformat()
+    d_range_start = (today - timedelta(days=1)).isoformat()
+    d_range_end = (today + timedelta(days=1)).isoformat()
+
     test_records = [
         {
             "state": "Maharashtra",
             "district": "Pune",
             "market": "Pune",
             "commodity": "Soyabean",
-            "arrival_date": "2026-10-15",
+            "arrival_date": d_older,
             "min_price": 4000.0,
             "modal_price": 4400.0,
             "max_price": 4600.0,
@@ -409,7 +416,7 @@ def test_api_observations_filtering_and_pagination(client: TestClient, test_db: 
             "district": "Pune",
             "market": "Pune",
             "commodity": "Soyabean",
-            "arrival_date": "2026-10-20",
+            "arrival_date": d_recent,
             "min_price": 4300.0,
             "modal_price": 4650.0,
             "max_price": 4900.0,
@@ -419,7 +426,7 @@ def test_api_observations_filtering_and_pagination(client: TestClient, test_db: 
             "district": "Pune",
             "market": "Pune",
             "commodity": "Wheat",
-            "arrival_date": "2026-10-20",
+            "arrival_date": d_recent,
             "min_price": 2500.0,
             "modal_price": 2700.0,
             "max_price": 2900.0,
@@ -435,7 +442,7 @@ def test_api_observations_filtering_and_pagination(client: TestClient, test_db: 
     assert data["data_freshness_status"] == "FRESH"
 
     # 2. Filter by Date Range
-    res_date = client.get("/api/v1/market-intelligence/observations?start_date=2026-10-19&end_date=2026-10-21")
+    res_date = client.get(f"/api/v1/market-intelligence/observations?start_date={d_range_start}&end_date={d_range_end}")
     assert res_date.status_code == 200
     data_date = res_date.json()
     assert data_date["total"] == 2

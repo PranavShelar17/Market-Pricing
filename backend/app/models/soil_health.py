@@ -1,11 +1,14 @@
-﻿"""Database models for Soil Health Reports and Test Parameters.
+"""Database models for Soil Health Reports and Test Parameters.
 SoilPilot Phase 7
 """
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import TYPE_CHECKING, Optional, List
 from sqlalchemy import String, Boolean, DateTime, Integer, Float, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.field import Field
 
 class SoilReport(Base):
     """Official laboratory soil test report associated with an agricultural field."""

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2, Sprout } from "lucide-react";
@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const ProtectedRouteContent: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,3 +47,24 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   return <>{children}</>;
 };
+
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = (props) => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-4 p-8">
+          <div className="w-12 h-12 rounded-2xl bg-soil-primaryLight border border-soil-secondary/40 text-soil-primary flex items-center justify-center animate-pulse">
+            <Sprout className="w-7 h-7 text-soil-primary animate-bounce" />
+          </div>
+          <div className="flex items-center gap-2 text-sm font-medium text-text-muted">
+            <Loader2 className="w-4 h-4 animate-spin text-soil-primary" />
+            <span>Verifying farm access...</span>
+          </div>
+        </div>
+      }
+    >
+      <ProtectedRouteContent {...props} />
+    </Suspense>
+  );
+};
+

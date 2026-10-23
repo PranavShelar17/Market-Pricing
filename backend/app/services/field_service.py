@@ -150,7 +150,14 @@ class FieldService:
         geom_wkt = None
         geojson_geom = None
         if field.geometry is not None:
-            geom_wkt = str(field.geometry)
+            if hasattr(field.geometry, "data"):
+                try:
+                    from geoalchemy2.shape import to_shape
+                    geom_wkt = to_shape(field.geometry).wkt
+                except Exception:
+                    geom_wkt = str(field.geometry)
+            else:
+                geom_wkt = str(field.geometry)
             geojson_geom = geometry_to_geojson(field.geometry)
         else:
             from app.gis.kml_service import kml_service

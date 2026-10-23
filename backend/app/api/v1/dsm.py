@@ -128,9 +128,10 @@ def get_kml_gats(
 @router.get("/kml/gats/{gat_no}", response_model=Dict[str, Any])
 def get_kml_gat_detail(
     gat_no: str,
+    db: Session = Depends(get_db),
     token: Optional[str] = Depends(extract_token),
 ):
-    """Get single Gat parcel geometry and metadata from KML file."""
+    """Get single Gat parcel geometry and metadata from KML file or cadastral database."""
     session_payload = auth_service.verify_session_token(token) if token else None
     user_role = session_payload.get("role") if session_payload else None
     user_gat = session_payload.get("gat_no") if session_payload else None
@@ -145,11 +146,11 @@ def get_kml_gat_detail(
                 detail=f"Access denied. You are only authorized to view your registered Gat ({clean_user_gat}).",
             )
 
-    gat = dsm_service.get_kml_gat_detail(clean_req_gat)
+    gat = dsm_service.get_kml_gat_detail(clean_req_gat, db=db)
     if not gat:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Gat '{gat_no}' not found in local KML files.",
+            detail=f"Gat '{gat_no}' not found in local KML files or cadastral database.",
         )
     return gat
 

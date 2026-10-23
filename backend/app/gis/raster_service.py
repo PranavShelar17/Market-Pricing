@@ -391,6 +391,16 @@ class RasterService:
     def _resolve_geometry(self, geom_input: Any):
         if not geom_input:
             return None
+        if hasattr(geom_input, "data"):
+            try:
+                from geoalchemy2.shape import to_shape
+                return to_shape(geom_input)
+            except Exception:
+                try:
+                    import shapely.wkb
+                    return shapely.wkb.loads(bytes(geom_input.data))
+                except Exception:
+                    pass
         if isinstance(geom_input, str):
             try:
                 return wkt.loads(geom_input)

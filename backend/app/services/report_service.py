@@ -135,9 +135,9 @@ class ReportService:
         farmer_name_clean = sanitize_filename_part(str(data.get("farmer", {}).get("name", "")))
         live_date = get_india_current_date_str()
         if farmer_name_clean and farmer_name_clean.lower() != "farmer":
-            filename = f"SoilPilot_Soil_Health_Card_{farmer_name_clean}_Gat_{gat_no}_{live_date}.pdf"
+            filename = f"SoilPilot_Detailed_Soil_Report_{farmer_name_clean}_Gat_{gat_no}_{live_date}.pdf"
         else:
-            filename = f"SoilPilot_Soil_Health_Card_Gat_{gat_no}_{live_date}.pdf"
+            filename = f"SoilPilot_Detailed_Soil_Report_Gat_{gat_no}_{live_date}.pdf"
 
         return pdf_bytes, filename
 

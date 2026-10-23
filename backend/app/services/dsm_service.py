@@ -270,9 +270,39 @@ class DSMService:
         return kml_service.get_all_gats(file_filter=file_filter)
 
     @staticmethod
-    def get_kml_gat_detail(gat_no: str) -> Optional[Dict[str, Any]]:
-        """Returns specific Gat details from KML."""
-        return kml_service.get_gat_by_no(gat_no, generate_fallback=False)
+    def get_kml_gat_detail(gat_no: str, db: Optional[Session] = None) -> Optional[Dict[str, Any]]:
+        """Returns specific Gat details from KML or cadastral database."""
+        gat = kml_service.get_gat_by_no(gat_no, generate_fallback=False)
+        if not gat and db is not None:
+            clean_gat = str(gat_no).strip()
+            f = db.query(Field).filter(Field.gat_no == clean_gat).first()
+            if f and f.geometry:
+                tot_ha = f.area
+                tot_ac = round(tot_ha * 2.47105, 2) if tot_ha is not None else None
+                from app.gis.raster_service import raster_service
+                shapely_geom = raster_service._resolve_geometry(f.geometry)
+                if shapely_geom:
+                    from shapely.geometry import mapping
+                    return {
+                        "id": f.id,
+                        "gat_no": f.gat_no,
+                        "name": f"Gat {f.gat_no}",
+                        "source_file": "Database Cadastre",
+                        "is_village_boundary": False,
+                        "area_ha": tot_ha,
+                        "total_area_hectares": tot_ha,
+                        "total_area_acres": tot_ac,
+                        "village": f.village.name if f.village else "Malegaon Kh.",
+                        "taluka": f.village.taluka.name if f.village and f.village.taluka else "Baramati",
+                        "district": "Pune",
+                        "state": "Maharashtra",
+                        "centroid": [round(shapely_geom.centroid.x, 6), round(shapely_geom.centroid.y, 6)],
+                        "bounds": list(shapely_geom.bounds),
+                        "geometry": mapping(shapely_geom),
+                        "geometry_wkt": shapely_geom.wkt,
+                        "attributes": {},
+                    }
+        return gat
 
     @staticmethod
     def render_heatmap(

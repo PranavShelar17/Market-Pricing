@@ -1,10 +1,14 @@
 from datetime import datetime, timezone
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from sqlalchemy import String, Boolean, DateTime, Integer, Float, ForeignKey, UniqueConstraint, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import TypeDecorator, Text
 from geoalchemy2 import Geometry
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.farmer import Farmer
+    from app.models.geography import Village
 
 
 class GeometryOrText(TypeDecorator):
